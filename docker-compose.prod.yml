@@ -1,0 +1,235 @@
+# Polyglot Philosophy Playground
+# 完全なマルチランゲージプラットフォーム
+
+version: '3.8'
+
+services:
+  # PostgreSQL データベース
+  postgres:
+    image: postgres:16-alpine
+    container_name: polyglot_postgres
+    environment:
+      POSTGRES_DB: polyglot_philosophy
+      POSTGRES_USER: polyglot_user
+      POSTGRES_PASSWORD: polyglot_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - polyglot_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U polyglot_user -d polyglot_philosophy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis キャッシュ
+  redis:
+    image: redis:7-alpine
+    container_name: polyglot_redis
+    command: redis-server --appendonly yes --requirepass redispassword
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - polyglot_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Go APIゲートウェイ
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: polyglot_gateway
+    environment:
+      - DATABASE_URL=postgres://polyglot_user:polyglot_password@postgres:5432/polyglot_philosophy?sslmode=disable
+      - REDIS_URL=redis://:redispassword@redis:6379/0
+      - SNS_SERVICE_URL=http://sns-service:8001
+      - AI_SERVICE_URL=http://ai-service:8002
+      - JWT_SECRET=your_super_secret_jwt_key_here
+      - ENVIRONMENT=production
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - polyglot_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Python SNSサービス
+  sns-service:
+    build:
+      context: ./backend/sns-service
+      dockerfile: Dockerfile
+    container_name: polyglot_sns
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://polyglot_user:polyglot_password@postgres:5432/polyglot_philosophy
+      - REDIS_URL=redis://:redispassword@redis:6379/1
+      - SECRET_KEY=your_sns_secret_key_here
+      - ENVIRONMENT=production
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - polyglot_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Rust AIサービス
+  ai-service:
+    build:
+      context: ./backend/ai-service
+      dockerfile: Dockerfile
+    container_name: polyglot_ai
+    environment:
+      - DATABASE_URL=postgres://polyglot_user:polyglot_password@postgres:5432/polyglot_philosophy
+      - REDIS_URL=redis://:redispassword@redis:6379/2
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - RUST_LOG=info
+      - ENVIRONMENT=production
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - polyglot_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Next.js フロントエンド
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: polyglot_frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8000
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - polyglot_network
+    restart: unless-stopped
+
+  # Nginx リバースプロキシ
+  nginx:
+    image: nginx:alpine
+    container_name: polyglot_nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - api-gateway
+    networks:
+      - polyglot_network
+    restart: unless-stopped
+
+  # MQTT ブローカー (IoT用)
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    container_name: polyglot_mqtt
+    volumes:
+      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt_data:/mosquitto/data
+      - mqtt_logs:/mosquitto/log
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    networks:
+      - polyglot_network
+    restart: unless-stopped
+
+  # Prometheus 監視
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: polyglot_prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - polyglot_network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+  # Grafana ダッシュボード
+  grafana:
+    image: grafana/grafana:latest
+    container_name: polyglot_grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=grafana_admin_password
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - polyglot_network
+
+networks:
+  polyglot_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  mqtt_data:
+    driver: local
+  mqtt_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

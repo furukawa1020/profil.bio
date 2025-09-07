@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: philosophy_playground
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Go Backend (Main API)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: "host=postgres user=postgres password=password dbname=philosophy_playground port=5432 sslmode=disable"
+    depends_on:
+      - postgres
+
+  # Python Wisdom Service (寂しガエル)
+  python-wisdom:
+    build:
+      context: ./microservices/python-wisdom
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      FLASK_ENV: production
+
+  # Rust Perfection Service (雪だるまチャン)
+  rust-perfection:
+    build:
+      context: ./microservices/rust-perfection
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080
+      NEXT_PUBLIC_PYTHON_WISDOM_URL: http://python-wisdom:5001
+      NEXT_PUBLIC_RUST_PERFECTION_URL: http://rust-perfection:5002
+    depends_on:
+      - backend
+      - python-wisdom
+      - rust-perfection
+
+volumes:
+  postgres_data:

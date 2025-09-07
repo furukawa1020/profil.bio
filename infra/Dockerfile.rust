@@ -1,0 +1,18 @@
+FROM rust:1.70
+
+WORKDIR /app
+
+# Copy Cargo files
+COPY microservices/rust-ai/Cargo.toml microservices/rust-ai/Cargo.lock ./
+
+# Copy source code
+COPY microservices/rust-ai/src ./src
+
+# Build the application
+RUN cargo build --release
+
+# Expose port
+EXPOSE 3001
+
+# Run the application
+CMD ["./target/release/ai_server"]
