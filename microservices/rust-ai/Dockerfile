@@ -9,18 +9,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy Cargo.toml and create dummy source for dependency caching
+# Copy all source files and build directly
 COPY Cargo.toml ./
-RUN mkdir -p src && echo 'fn main() {}' > src/main.rs
-
-# Build dependencies only
-RUN cargo build --release
-RUN rm -rf src/
-
-# Copy real source code
 COPY src/ ./src/
 
-# Build the actual application
+# Build the application in one step
 RUN cargo build --release
 
 # Runtime stage with minimal image
