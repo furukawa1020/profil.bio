@@ -5,7 +5,15 @@ WORKDIR /app
 
 # Copy Cargo files first for better caching
 COPY Cargo.toml ./
-# Copy source code (this will trigger dependency resolution)
+
+# Create a dummy src/main.rs to build dependencies
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+
+# Build dependencies (this will be cached)
+RUN cargo build --release
+RUN rm -f target/release/deps/philosophy_ai*
+
+# Copy actual source code
 COPY src ./src
 
 # Build the application in release mode
