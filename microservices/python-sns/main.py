@@ -14,6 +14,12 @@ from collections import defaultdict
 
 # Database setup - 環境変数から取得、ローカル開発用のデフォルト値も設定
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/philosophy_sns")
+
+# デバッグ: DATABASE_URLの状態を確認
+print(f"DATABASE_URL環境変数: {DATABASE_URL[:50]}..." if len(DATABASE_URL) > 50 else f"DATABASE_URL環境変数: {DATABASE_URL}")
+if not DATABASE_URL or DATABASE_URL.strip() == "":
+    raise ValueError("DATABASE_URL環境変数が設定されていません。Railwayで環境変数を設定してください。")
+
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
