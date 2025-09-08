@@ -9,16 +9,15 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# First, copy only Cargo.toml to leverage Docker layer caching
+# Copy Cargo.toml and create dummy source for dependency caching
 COPY Cargo.toml ./
+RUN mkdir -p src && echo 'fn main() {}' > src/main.rs
 
-# Create a placeholder main.rs for dependency caching
-RUN mkdir -p src && echo "fn main() {println!(\"placeholder\");}" > src/main.rs
+# Build dependencies only
+RUN cargo build --release
+RUN rm -rf src/
 
-# Pre-build dependencies
-RUN cargo build --release && rm -rf src target/release/deps/philosophy*
-
-# Now copy the real source code
+# Copy real source code
 COPY src/ ./src/
 
 # Build the actual application
