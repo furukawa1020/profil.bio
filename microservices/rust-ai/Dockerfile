@@ -4,9 +4,8 @@ FROM rust:1.70 as builder
 WORKDIR /app
 
 # Copy Cargo files first for better caching
-COPY Cargo.toml Cargo.lock ./
-
-# Create src directory and copy source code
+COPY Cargo.toml ./
+# Copy source code (this will trigger dependency resolution)
 COPY src ./src
 
 # Build the application in release mode
