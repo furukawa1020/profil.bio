@@ -1,5 +1,5 @@
-# Rust AI Service Dockerfile for Railway - Version 2.1
-FROM rust:1.76-slim as builder
+# Rust AI Service Dockerfile for Railway - Version 2.2
+FROM rust:latest as builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
