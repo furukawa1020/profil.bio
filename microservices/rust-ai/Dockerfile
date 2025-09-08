@@ -1,22 +1,27 @@
-# Rust AI Service Dockerfile for Railway
-FROM rust:1.70 as builder
+# Rust AI Service Dockerfile for Railway - Version 2.0
+FROM rust:1.70-slim as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy Cargo files first for better caching
+# First, copy only Cargo.toml to leverage Docker layer caching
 COPY Cargo.toml ./
 
-# Create a dummy src/main.rs to build dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs
+# Create a placeholder main.rs for dependency caching
+RUN mkdir -p src && echo "fn main() {println!(\"placeholder\");}" > src/main.rs
 
-# Build dependencies (this will be cached)
-RUN cargo build --release
-RUN rm -f target/release/deps/philosophy_ai*
+# Pre-build dependencies
+RUN cargo build --release && rm -rf src target/release/deps/philosophy*
 
-# Copy actual source code
-COPY src ./src
+# Now copy the real source code
+COPY src/ ./src/
 
-# Build the application in release mode
+# Build the actual application
 RUN cargo build --release
 
 # Runtime stage with minimal image
