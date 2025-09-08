@@ -96,9 +96,15 @@ async fn main() {
         .or(wisdom)
         .with(cors);
 
-    println!("🚀 AI Server running on http://localhost:3001");
+    // Get port from environment variable
+    let port: u16 = std::env::var("PORT")
+        .unwrap_or_else(|_| "3001".to_string())
+        .parse()
+        .unwrap_or(3001);
+
+    println!("🚀 AI Server running on http://0.0.0.0:{}", port);
     warp::serve(routes)
-        .run(([0, 0, 0, 0], 3001))
+        .run(([0, 0, 0, 0], port))
         .await;
 }
 
