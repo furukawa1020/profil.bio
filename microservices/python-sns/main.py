@@ -9,10 +9,11 @@ from typing import List, Optional
 import uuid
 import json
 import asyncio
+import os
 from collections import defaultdict
 
-# Database setup
-DATABASE_URL = "postgresql://user:password@localhost/philosophy_sns"
+# Database setup - 環境変数から取得、ローカル開発用のデフォルト値も設定
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/philosophy_sns")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
