@@ -91,11 +91,19 @@ var upgrader = websocket.Upgrader{
 // Database
 var db *gorm.DB
 
-// Service URLs
-const (
-	AI_SERVICE_URL  = "http://localhost:3001"
-	SNS_SERVICE_URL = "http://localhost:3002"
+// Service URLs - 環境変数から取得
+var (
+	AI_SERVICE_URL  = getEnvWithDefault("RUST_AI_URL", "http://localhost:3001")
+	SNS_SERVICE_URL = getEnvWithDefault("PYTHON_SNS_URL", "http://localhost:3002")
 )
+
+func getEnvWithDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
 
 func initDatabase() {
 	var err error
