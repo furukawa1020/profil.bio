@@ -75,6 +75,36 @@ docker-compose up -d
 - **Python Wisdom**: http://localhost:5001
 - **Rust Perfection**: http://localhost:5002
 
+## 🌐 Vercelデプロイ手順
+
+### 1. 環境変数の設定
+Vercelダッシュボードで以下の環境変数を設定:
+```bash
+NEXT_PUBLIC_API_URL=https://backend-production-e46a.up.railway.app
+NEXT_PUBLIC_AI_SERVICE_URL=https://backend-production-e46a.up.railway.app
+NEXT_PUBLIC_SNS_SERVICE_URL=https://backend-production-e46a.up.railway.app
+NEXT_PUBLIC_ENV=production
+```
+
+### 2. デプロイ方法
+
+#### GitHub連携 (推奨)
+1. GitHubリポジトリをVercelに接続
+2. `frontend`ディレクトリをルートとして指定
+3. 自動デプロイが開始されます
+
+#### Vercel CLI
+```bash
+npm i -g vercel
+cd frontend
+vercel --prod
+```
+
+### 3. バックエンド接続
+- バックエンドはRailwayで稼働中: `https://backend-production-e46a.up.railway.app`
+- フロントエンドは自動的にバックエンドAPIに接続します
+- ヘルスチェック: `/health`
+
 ## 🔧 個別開発環境
 
 ### フロントエンド開発

@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "name": "polyglot-philosophy-playground",
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://backend-production-e46a.up.railway.app",
+    "NEXT_PUBLIC_AI_SERVICE_URL": "https://backend-production-e46a.up.railway.app",
+    "NEXT_PUBLIC_SNS_SERVICE_URL": "https://backend-production-e46a.up.railway.app",
+    "NEXT_PUBLIC_ENV": "production"
+  },
+  "functions": {
+    "frontend/pages/api/*.js": {
+      "maxDuration": 10
+    }
+  }
+}

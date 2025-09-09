@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
   images: {
-    domains: ['github.com', 'instagram.com', 'pbs.twimg.com'],
+    domains: ['github.com', 'instagram.com', 'pbs.twimg.com', 'railway.app'],
   },
   webpack: (config) => {
     config.module.rules.push({
