@@ -35,6 +35,9 @@ export default function Home() {
               <Link href="/feed" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                 フィード
               </Link>
+              <Link href="/chat" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                AIチャット
+              </Link>
               <Link href="/profile" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                 プロフィール
               </Link>
@@ -82,6 +85,13 @@ export default function Home() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   📱 フィード
+                </Link>
+                <Link 
+                  href="/chat" 
+                  className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  🤖 AIチャット
                 </Link>
                 <Link 
                   href="/profile" 
@@ -163,33 +173,72 @@ export default function Home() {
             </div>
           </section>
 
-          {/* 最近の思考セクション */}
+          {/* AIチャット案内セクション */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">最近の思考</h2>
-              <Link href="/thoughts" className="text-blue-600 hover:text-blue-800 transition-colors text-sm font-medium">
-                すべて見る →
+              <h2 className="text-xl font-bold text-gray-900">AI哲学者と対話</h2>
+              <Link href="/chat" className="text-blue-600 hover:text-blue-800 transition-colors text-sm font-medium">
+                チャットを始める →
               </Link>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <p className="text-sm text-gray-700 mb-2">AI技術の進歩により、エンジニアの役割も変わってきています。単にコードを書くだけでなく、AIとの協働や新しい価値創造が重要になってきました。</p>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>2024.01.14</span>
-                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">AI</span>
+                <div className="flex items-center space-x-3 mb-3">
+                  <span className="text-2xl">🧙‍♂️</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">ソクラテス</h3>
+                    <p className="text-sm text-gray-600">質問による探求で思考を深める</p>
+                  </div>
                 </div>
+                <p className="text-sm text-gray-700 mb-3">「無知の知」で有名な古代ギリシャの哲学者と対話してみませんか？</p>
+                <Link href="/chat" className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors text-sm font-medium">
+                  対話を始める
+                </Link>
               </div>
               
-              <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <p className="text-sm text-gray-700 mb-2">技術と社会の再設計を通じて、より良い未来を創造していきたいと考えています。一人ひとりが「生きててよかった」と思える世界を目指して。</p>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>2024.01.12</span>
-                  <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">思考</span>
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center space-x-3 mb-3">
+                  <span className="text-2xl">🧘‍♂️</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">ブッダ</h3>
+                    <p className="text-sm text-gray-600">悟りの視点で人生を導く</p>
+                  </div>
                 </div>
+                <p className="text-sm text-gray-700 mb-3">仏教の開祖から、苦悩の解決と心の平安について学びましょう。</p>
+                <Link href="/chat" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors text-sm font-medium">
+                  対話を始める
+                </Link>
               </div>
             </div>
           </section>
         </div>
+
+        {/* 最近の思考セクション（下に移動） */}
+        <section className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">最近の思考</h2>
+            <Link href="/thoughts" className="text-blue-600 hover:text-blue-800 transition-colors text-sm font-medium">
+              すべて見る →
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+              <p className="text-sm text-gray-700 mb-2">AI技術の進歩により、エンジニアの役割も変わってきています。単にコードを書くだけでなく、AIとの協働や新しい価値創造が重要になってきました。</p>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>2024.01.14</span>
+                <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">AI</span>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+              <p className="text-sm text-gray-700 mb-2">技術と社会の再設計を通じて、より良い未来を創造していきたいと考えています。一人ひとりが「生きててよかった」と思える世界を目指して。</p>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>2024.01.12</span>
+                <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">思考</span>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* 追加セクション */}
         <section className="mt-12 text-center">
@@ -207,6 +256,13 @@ export default function Home() {
               >
                 <span>📧</span>
                 <span>お問い合わせ</span>
+              </Link>
+              <Link 
+                href="/chat" 
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center justify-center space-x-2"
+              >
+                <span>🤖</span>
+                <span>AI哲学者と対話</span>
               </Link>
               <Link 
                 href="/profile" 

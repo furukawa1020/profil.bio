@@ -83,6 +83,10 @@ export default function ThoughtsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [simulationResult, setSimulationResult] = useState<any>(null)
+  const [simulationLoading, setSimulationLoading] = useState(false)
+  const [wisdomData, setWisdomData] = useState<any>(null)
+  const [wisdomLoading, setWisdomLoading] = useState(false)
 
   const categories: ThoughtCategory[] = [
     { id: 'all', name: 'すべて', color: 'text-gray-600', icon: <BookIcon className="w-4 h-4" />, count: 0 },
@@ -199,6 +203,57 @@ export default function ThoughtsPage() {
     return categories.find(cat => cat.id === categoryId) || categories[0]
   }
 
+  // 哲学シミュレーション機能
+  const runPhilosophySimulation = async () => {
+    try {
+      setSimulationLoading(true)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-e46a.up.railway.app'
+      const response = await fetch(`${apiUrl}/api/v1/philosophy/simulate`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setSimulationResult(data)
+      } else {
+        throw new Error('シミュレーションに失敗しました')
+      }
+    } catch (err) {
+      console.error('Philosophy simulation error:', err)
+      setError('哲学シミュレーションの実行に失敗しました')
+    } finally {
+      setSimulationLoading(false)
+    }
+  }
+
+  const generateWisdom = async () => {
+    try {
+      setWisdomLoading(true)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-e46a.up.railway.app'
+      const response = await fetch(`${apiUrl}/api/v1/ai/wisdom`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setWisdomData(data)
+      } else {
+        throw new Error('洞察の生成に失敗しました')
+      }
+    } catch (err) {
+      console.error('Wisdom generation error:', err)
+      setError('AI洞察の生成に失敗しました')
+    } finally {
+      setWisdomLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -240,6 +295,89 @@ export default function ThoughtsPage() {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             技術、イノベーション、戦略に関する洞察と考察
           </p>
+        </div>
+
+        {/* 哲学シミュレーション */}
+        <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">🧠 並列哲学思考シミュレーション</h2>
+              <p className="text-sm text-gray-600">5つの異なる哲学的アプローチを同時実行</p>
+            </div>
+            <button
+              onClick={runPhilosophySimulation}
+              disabled={simulationLoading}
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              {simulationLoading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <BrainIcon className="w-4 h-4" />
+              )}
+              <span>{simulationLoading ? '実行中...' : 'シミュレーション実行'}</span>
+            </button>
+          </div>
+          
+          {simulationResult && (
+            <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <p className="text-sm text-purple-800 mb-2">
+                <strong>結果:</strong> {simulationResult.message}
+              </p>
+              <p className="text-xs text-purple-600">
+                使用ゴルーチン: {simulationResult.goroutines_used} | 
+                並列思考数: {simulationResult.parallel_thoughts?.length || 0}
+              </p>
+              {simulationResult.parallel_thoughts && (
+                <div className="mt-3 grid gap-2">
+                  {simulationResult.parallel_thoughts.slice(0, 3).map((thought: string, index: number) => (
+                    <div key={index} className="text-xs text-purple-700 bg-white/50 p-2 rounded">
+                      {thought}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* AI洞察生成 */}
+        <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">💡 AI洞察ジェネレーター</h2>
+              <p className="text-sm text-gray-600">人工知能による深層思考パターンの分析と洞察</p>
+            </div>
+            <button
+              onClick={generateWisdom}
+              disabled={wisdomLoading}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              {wisdomLoading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <LightbulbIcon className="w-4 h-4" />
+              )}
+              <span>{wisdomLoading ? '生成中...' : '洞察を生成'}</span>
+            </button>
+          </div>
+          
+          {wisdomData && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-800 mb-2">
+                <strong>洞察:</strong> {wisdomData.message}
+              </p>
+              {wisdomData.type && (
+                <p className="text-xs text-blue-600">
+                  洞察タイプ: {wisdomData.type}
+                </p>
+              )}
+              {wisdomData.context && (
+                <div className="mt-2 text-xs text-blue-700 bg-white/50 p-2 rounded">
+                  {wisdomData.context}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* カテゴリーフィルター */}
